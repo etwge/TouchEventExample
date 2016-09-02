@@ -11,7 +11,7 @@
     tools:context="com.example.expand.test.testfeature.MainActivity">
 
     <com.example.expand.test.testfeature.view.SpringScrollView
-        android:visibility="gone"
+        android:visibility="visible"
         android:paddingLeft="30dp"
         android:paddingRight="40dp"
         android:layout_width="match_parent"
@@ -27,7 +27,7 @@
     </com.example.expand.test.testfeature.view.SpringScrollView>
 
     <com.example.expand.test.testfeature.view.TouchEventTestView
-        android:visibility="visible"
+        android:visibility="gone"
         android:paddingLeft="30dp"
         android:paddingRight="40dp"
         android:layout_width="match_parent"

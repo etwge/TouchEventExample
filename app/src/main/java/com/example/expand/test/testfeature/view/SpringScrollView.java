@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 public class SpringScrollView extends ViewGroup{
 
     public static final String TAG = SpringScrollView.class.getSimpleName();
+    private static final float RATE = .5f;
 
     private View mTarget;
     private float mInitialDownY = -1;
@@ -96,6 +97,10 @@ public class SpringScrollView extends ViewGroup{
                 mInitialDownY = initialDownY;
                 break;
             case MotionEvent.ACTION_MOVE:
+                if(mActivePointerId == -1){
+                    Log.e(TAG, "invalid pointer id");
+                    return false;
+                }
                 final float y = getMotionY(ev, mActivePointerId);
                 if(y == -1){
                     return false;
@@ -107,6 +112,8 @@ public class SpringScrollView extends ViewGroup{
                 }
                 break;
             case MotionEvent.ACTION_POINTER_UP:
+                onSecondaryPointerUp(ev);
+                break;
             case MotionEvent.ACTION_CANCEL:
             case MotionEvent.ACTION_UP:
                 mIsBeingDragged = false;
@@ -115,9 +122,74 @@ public class SpringScrollView extends ViewGroup{
                 break;
 
         }
-
-
         return mIsBeingDragged;
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent ev) {
+        int action = MotionEventCompat.getActionMasked(ev);
+
+        switch (action){
+            case MotionEvent.ACTION_DOWN:
+                mActivePointerId = MotionEventCompat.getPointerId(ev, 0);
+                mIsBeingDragged = false;
+                final float initialDownY = getMotionY(ev, mActivePointerId);
+                if(initialDownY == -1){
+                    return false;
+                }
+                mInitialDownY = initialDownY;
+                break;
+            case MotionEvent.ACTION_MOVE:
+                if(mActivePointerId == -1){
+                    Log.e(TAG, "invalid pointer id");
+                    return false;
+                }
+                final float y = getMotionY(ev, mActivePointerId);
+                if(y == -1){
+                    return false;
+                }
+                float yDiff = y - mInitialDownY;
+                if(yDiff > mTouchSlop && !mIsBeingDragged){
+                    mIsBeingDragged = true;
+                    mInitialMotionY = mInitialDownY + mTouchSlop;
+                }
+                Log.i("xxx", "mInitialMotionY" + mInitialMotionY);
+                if(mIsBeingDragged){
+                    float targetY = (y - mInitialMotionY) * RATE;
+//                    if(targetY > )
+                    setTargetOffsetTopAndBottom(targetY);
+                }
+                break;
+            case MotionEvent.ACTION_POINTER_DOWN:
+                onSecondaryPointerDown(ev);
+                break;
+            case MotionEvent.ACTION_CANCEL:
+            case MotionEvent.ACTION_UP:
+                mIsBeingDragged = false;
+                mInitialDownY = -1;
+                mActivePointerId = -1;
+                break;
+        }
+
+        return true;
+    }
+
+    private void onSecondaryPointerDown(MotionEvent ev) {
+        mActivePointerId = ev.getPointerId(ev.getActionIndex());
+    }
+
+    private void setTargetOffsetTopAndBottom(float yDiff) {
+        Log.i("xxx", "yDiff:" + yDiff);
+
+        mTarget.offsetTopAndBottom((int) yDiff - mTarget.getTop());
+    }
+
+    private void onSecondaryPointerUp(MotionEvent ev) {
+        int pointerIndex = MotionEventCompat.getPointerId(ev, MotionEventCompat.getActionIndex(ev));
+        int pointerId = MotionEventCompat.getPointerId(ev, pointerIndex);
+        if(pointerId == mActivePointerId){
+            mActivePointerId = pointerId == 0 ? 0 : 1;
+        }
     }
 
     private float getMotionY(MotionEvent ev, int mActivePointerId) {
