@@ -2,12 +2,16 @@ package com.example.expand.test.testfeature.view;
 
 import android.content.Context;
 import android.support.v4.view.MotionEventCompat;
+import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.DecelerateInterpolator;
+import android.view.animation.Transformation;
 
 /**
  * Author: lhy
@@ -24,6 +28,10 @@ public class SpringScrollView extends ViewGroup{
     private boolean mIsBeingDragged;
     private int mTouchSlop;
     private float mInitialMotionY;
+    private int mMediumAnimationDuration;
+    private int mFrom;
+    private DecelerateInterpolator decelerateInterpolator;
+    private boolean mReturningToStart;
 
     /**
      * Simple constructor to use when creating instance from code
@@ -42,8 +50,29 @@ public class SpringScrollView extends ViewGroup{
         super(context, attrs);
 
         mTouchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
+        mMediumAnimationDuration = getContext().getResources().getInteger(android.R.integer.config_mediumAnimTime);
+        decelerateInterpolator = new DecelerateInterpolator(2f);
         Log.i(TAG, "mTouchSlop:" + mTouchSlop);
     }
+
+    private Animation animToStartPosition = new Animation() {
+        @Override
+        protected void applyTransformation(float interpolatedTime, Transformation t) {
+            super.applyTransformation(interpolatedTime, t);
+            int targetTop = 0;
+            if (mFrom != 0) {
+                targetTop = (mFrom + (int)((0 - mFrom) * interpolatedTime));
+            }
+            int offset = targetTop - 0;
+//            final int currentTop = mTarget.getTop();
+//            if (offset + currentTop < 0) {
+//                offset = 0 - currentTop;
+//            }
+            Log.i("xxx", "interpolatedTime:" + interpolatedTime);
+            Log.i("xxx", "targetTop:" + offset);
+            setTargetOffsetTopAndBottom(offset);
+        }
+    };
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
@@ -85,6 +114,11 @@ public class SpringScrollView extends ViewGroup{
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
+
+        if(!isEnabled() || mReturningToStart /*|| canScrollUp() || canScrollDown()*/){
+            return false;
+        }
+
         int action = MotionEventCompat.getActionMasked(ev);
         switch (action){
             case MotionEvent.ACTION_DOWN:
@@ -106,9 +140,12 @@ public class SpringScrollView extends ViewGroup{
                     return false;
                 }
                 float yDiff = y - mInitialDownY;
-                if(yDiff > mTouchSlop && !mIsBeingDragged){
+                if(yDiff > mTouchSlop && !mIsBeingDragged && !canScrollUp()){
                     mIsBeingDragged = true;
                     mInitialMotionY = mInitialDownY + mTouchSlop;
+                }else if (-yDiff > mTouchSlop && !mIsBeingDragged && !canScrollDown()){
+                    mIsBeingDragged = true;
+                    mInitialMotionY = mInitialDownY - mTouchSlop;
                 }
                 break;
             case MotionEvent.ACTION_POINTER_UP:
@@ -123,6 +160,19 @@ public class SpringScrollView extends ViewGroup{
 
         }
         return mIsBeingDragged;
+    }
+
+    @Override
+    public void requestDisallowInterceptTouchEvent(boolean b) {
+        // Nope.
+    }
+
+    private boolean canScrollUp() {
+        return ViewCompat.canScrollVertically(mTarget, -1);
+    }
+
+    private boolean canScrollDown() {
+        return ViewCompat.canScrollVertically(mTarget, 1);
     }
 
     @Override
@@ -149,14 +199,22 @@ public class SpringScrollView extends ViewGroup{
                     return false;
                 }
                 float yDiff = y - mInitialDownY;
+                boolean isScrollUp = false;
                 if(yDiff > mTouchSlop && !mIsBeingDragged){
                     mIsBeingDragged = true;
                     mInitialMotionY = mInitialDownY + mTouchSlop;
+                }else if (-yDiff > mTouchSlop && !mIsBeingDragged){
+                    mIsBeingDragged = true;
+                    mInitialMotionY = mInitialDownY - mTouchSlop;
+                    isScrollUp = true;
                 }
                 Log.i("xxx", "mInitialMotionY" + mInitialMotionY);
                 if(mIsBeingDragged){
                     float targetY = (y - mInitialMotionY) * RATE;
 //                    if(targetY > )
+                    if(isScrollUp){
+                        targetY = (mInitialMotionY - y) * RATE;
+                    }
                     setTargetOffsetTopAndBottom(targetY);
                 }
                 break;
@@ -165,6 +223,7 @@ public class SpringScrollView extends ViewGroup{
                 break;
             case MotionEvent.ACTION_CANCEL:
             case MotionEvent.ACTION_UP:
+                animOffsetToStartPosition(mTarget.getTop(), animToStartPositionLister);
                 mIsBeingDragged = false;
                 mInitialDownY = -1;
                 mActivePointerId = -1;
@@ -174,12 +233,33 @@ public class SpringScrollView extends ViewGroup{
         return true;
     }
 
+    private void animOffsetToStartPosition(int from, Animation.AnimationListener listener) {
+        mReturningToStart = true;
+        mFrom = from;
+        animToStartPosition.reset();
+        animToStartPosition.setDuration(mMediumAnimationDuration);
+        animToStartPosition.setAnimationListener(listener);
+        animToStartPosition.setInterpolator(decelerateInterpolator);
+        this.startAnimation(animToStartPosition);
+    }
+
+    Animation.AnimationListener animToStartPositionLister = new BaseAnimationListener(){
+        @Override
+        public void onAnimationEnd(Animation animation) {
+            super.onAnimationEnd(animation);
+            mReturningToStart = false;
+        }
+    };
+
     private void onSecondaryPointerDown(MotionEvent ev) {
         mActivePointerId = ev.getPointerId(ev.getActionIndex());
     }
 
     private void setTargetOffsetTopAndBottom(float yDiff) {
         Log.i("xxx", "yDiff:" + yDiff);
+//        if(yDiff < 0){
+//            yDiff = 0;
+//        }
 
         mTarget.offsetTopAndBottom((int) yDiff - mTarget.getTop());
     }
@@ -198,5 +278,23 @@ public class SpringScrollView extends ViewGroup{
             return -1;
         }
         return MotionEventCompat.getY(ev, index);
+    }
+
+    /**
+     * Simple AnimationListener to avoid having to implement unneeded methods in
+     * AnimationListeners.
+     */
+    private class BaseAnimationListener implements Animation.AnimationListener {
+        @Override
+        public void onAnimationStart(Animation animation) {
+        }
+
+        @Override
+        public void onAnimationEnd(Animation animation) {
+        }
+
+        @Override
+        public void onAnimationRepeat(Animation animation) {
+        }
     }
 }

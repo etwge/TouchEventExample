@@ -17,13 +17,23 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <TextView
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="16404dp"
-            android:background="#932"
-            android:textSize="25sp"
-            android:text="我觉得嘛"/>
+            android:layout_height="match_parent">
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="16404dp"
+                    android:background="#2cdada"
+                    android:textSize="25sp"
+                    android:textColor="#fff"
+                    android:text="我觉得嘛"/>
 
+            </LinearLayout>
+        </ScrollView>
     </com.example.expand.test.testfeature.view.SpringScrollView>
 
     <com.example.expand.test.testfeature.view.TouchEventTestView
