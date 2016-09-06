@@ -16,6 +16,8 @@ import android.view.animation.Transformation;
 /**
  * Author: lhy
  * Date: 2016/9/1
+ * Swipe the ScrollView to the Top or Bottom, can continue scroll up or scroll down a little distance,
+ * and up finger auto return to original position
  */
 public class SpringScrollView extends ViewGroup{
 
@@ -68,8 +70,8 @@ public class SpringScrollView extends ViewGroup{
 //            if (offset + currentTop < 0) {
 //                offset = 0 - currentTop;
 //            }
-            Log.i("xxx", "interpolatedTime:" + interpolatedTime);
-            Log.i("xxx", "targetTop:" + offset);
+            Log.i(TAG, "interpolatedTime:" + interpolatedTime);
+            Log.i(TAG, "targetTop:" + offset);
             setTargetOffsetTopAndBottom(offset);
         }
     };
@@ -208,7 +210,7 @@ public class SpringScrollView extends ViewGroup{
                     mInitialMotionY = mInitialDownY - mTouchSlop;
                     isScrollUp = true;
                 }
-                Log.i("xxx", "mInitialMotionY" + mInitialMotionY);
+                Log.i(TAG, "mInitialMotionY" + mInitialMotionY);
                 if(mIsBeingDragged){
                     float targetY = (y - mInitialMotionY) * RATE;
 //                    if(targetY > )
@@ -256,7 +258,7 @@ public class SpringScrollView extends ViewGroup{
     }
 
     private void setTargetOffsetTopAndBottom(float yDiff) {
-        Log.i("xxx", "yDiff:" + yDiff);
+        Log.i(TAG, "yDiff:" + yDiff);
 //        if(yDiff < 0){
 //            yDiff = 0;
 //        }
