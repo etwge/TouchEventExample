@@ -37,6 +37,8 @@ import android.widget.AbsListView;
 
 
 /**
+ * copy code from support v4 19.0.0
+ *
  * The SwipeRefreshLayout should be used whenever the user can refresh the
  * contents of a view via a vertical swipe gesture. The activity that
  * instantiates this view should add an OnRefreshListener to be notified
