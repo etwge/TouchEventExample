@@ -46,18 +46,17 @@
 ```
 抠脚大汉的英语水平简单翻译一下：
 
-实现这个方法是用来拦截所有触摸屏幕的动作事件，这个方法允许你监控这些事件当它们被分派到子View时
+
+实现这个方法是用来拦截所有触摸屏幕事件，这个方法允许你监控这些事件当它们被分派到子View
 并且拥有当前全部点的动作的所有权。
 
-使用这个方法需要特别小心，因为有非常复杂的联系跟onTouchEvent()，使用如同这个方法要用正确的方式，事件接收根据以下规则：
+使用这个函数需要特别小心，因为有非常复杂的联系跟onTouchEvent()，使用这个方法一样要采用用正确的方式，事件接收根据以下规则：
 
 你将先收到down event在这里
-这个down事件可以被一个子View处理，或者被自身的onTouchEvent()事件处理；意味你可以实现 onTouchEvent()中返回true, 你将会
+这个down事件可以被一个子View处理，或者被自身的onTouchEvent()事件处理；意味你可以在实现 onTouchEvent()的方法中返回true, 你将会
 继续收到该手势的后续的事件（而不是继续寻找父View去处理它），同样，在onTouchEvent()事件返回true ，你将不会接收到任何的后续事件
 在onInterceptEvent()方法中，像正常那样，所有的事件处理必须写在onTouchEvent()中
-
 如果在这个方法中你返回了false，每一个的后续事件（直到最后一次的up 事件）先传到这里，然后在传递到目标的onTouchEvent()
-
 如果在这个方法中你返回了true，除了MotionEvent#ACTION_CANCEL这个，你将不会收到任何的后续事件。所有的将来时间将直接传递到
 onTouchEvent()中，不会出现在这个方法里了
 
@@ -111,11 +110,15 @@ onTouchEvent()中，不会出现在这个方法里了
 
 ###后记
 
-一般认为ACTION_DOWN是一个触摸事件集合的开始，然后到ACTION_UP 或者ACTION_CANCEL代表事件结束。移动时会产生有ACTION_MOVE事件，
-多点时另一个点按下时会产生ACTION_POINTER_DOWN，其中一个点离开时产生ACTION_POINTER_UP
-如果在ACTION_DOWN事件时，在onTouchEvent()中返回true表示处理了该事件，其他的后续事件就会传递到这里
 
-在ACTION_DOWN事件中，如果在目标View的onTouchEvent()方法中返回true，表示处理了这个事件，将不会往下传递，后续的其他事件都会传递到这里
+
+1. 一般认为ACTION_DOWN是一个触摸事件集合的开始，然后到ACTION_UP 或者ACTION_CANCEL代表事件结束。移动时会产生有ACTION_MOVE事件，多点时另一个点按下时会产生ACTION_POINTER_DOWN，其中一个点离开时产生ACTION_POINTER_UP；
+
+2. 如果在ACTION_DOWN事件时，在onTouchEvent()中返回true表示处理了该事件，其他的后续事件就会传递到这里；
+
+3. 在ACTION_DOWN事件中，如果在目标View的onTouchEvent()方法中返回true，表示处理了这个事件，将不会往下传递，后续的其他事件都会传递到这里
+
+
 
 **多点时对于ACTION_MOVE始终的event，getActionIndex() 总是0的疑惑？**
 - ACTION_MOVE属于单点的event的action，头两位不会带索引信息的，所以始终是返回0,要想获取其他的点，需要每个点遍历，根据pointIndex;
@@ -127,5 +130,10 @@ onTouchEvent()中，不会出现在这个方法里了
 https://github.com/etwge/TouchEventExample
 
 
+
+### 参考
+建议看下SwipeRefreshView和ScrollView的中的onTouchEvent和onInterceptEvent代码
+https://developer.android.com/training/gestures/viewgroup.html
+http://blog.csdn.net/xyz_lmn/article/details/12517911
 
 
