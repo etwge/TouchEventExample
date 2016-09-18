@@ -126,14 +126,14 @@ onTouchEvent()中，不会出现在这个方法里了
 - 除了ACTION_MOVE，以外的ACTION_POINTER_DOWN，ACTION_POINTER_UP，这两个多点时才有的事件，会带有索引信息,ACTION_UP也会有索引信息，调用getActionIndex()则可以直接获取到对应的pointerIndex
 
 
-最好自己写个demo来试下，就很容易理解了，不要脸的附上自己写的( ▼-▼ )
+最好自己写个demo来试下，就很容易理解了，不要脸的附上自己写的( ▼-▼ )  
 https://github.com/etwge/TouchEventExample
 
 
 
 ### 参考
-建议看下SwipeRefreshView和ScrollView的中的onTouchEvent和onInterceptEvent代码
-https://developer.android.com/training/gestures/viewgroup.html
-http://blog.csdn.net/xyz_lmn/article/details/12517911
+建议看下SwipeRefreshView和ScrollView的中的onTouchEvent和onInterceptEvent代码  
+https://developer.android.com/training/gestures/viewgroup.html  
+http://blog.csdn.net/xyz_lmn/article/details/12517911  
 
 
